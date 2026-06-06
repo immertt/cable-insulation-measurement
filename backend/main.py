@@ -36,20 +36,13 @@ def save_image(path, image):
 # Kablo tipine göre ön işleme seç
 # ─────────────────────────────────────────────
 def get_threshold(image, cable_type: str, image_name: str = ""):
-    """
-    cable_type  : 'som_telli' | 'cok_telli' | 'uc_damarli'
-    image_name  : dosya adı (eski uyumluluk için yedek)
-    """
-    use_color = (
-        cable_type == "cok_telli"
-        or "cok_telli_1" in image_name.lower()
-    )
-
-    if use_color:
-        threshold = preprocess_color_cable(image)
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        blurred = cv2.GaussianBlur(gray, (5, 5), 0)
-        return gray, blurred, threshold
+    if cable_type == "cok_telli":
+        color_thresh = preprocess_color_cable(image)
+        contours_c, _ = find_all_contours(color_thresh)
+        if len(contours_c) >= 2:
+            gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+            blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+            return gray, blurred, color_thresh
 
     gray, blurred, threshold = preprocess_image(image)
     return gray, blurred, threshold
