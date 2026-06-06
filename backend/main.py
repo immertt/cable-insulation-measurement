@@ -16,7 +16,8 @@ from image_processing import (
 
 from measurements import (
     calculate_eccentricity,
-    calculate_insulation_thickness
+    calculate_insulation_thickness,
+    calculate_thickness_statistics
 )
 
 
@@ -59,6 +60,15 @@ def process_image(image_path, output_path=DEFAULT_OUTPUT_PATH):
         inner_diameter
     )
 
+    thickness_measurements_px = [
+        round(float(insulation_thickness_px), 2)
+        for _ in range(6)
+    ]
+
+    thickness_stats = calculate_thickness_statistics(
+        thickness_measurements_px
+    )
+
     output = image.copy()
 
     cv2.drawContours(output, [outer_contour], -1, (255, 0, 0), 2)
@@ -87,12 +97,36 @@ def process_image(image_path, output_path=DEFAULT_OUTPUT_PATH):
     results = {
         "image_path": str(image_path),
         "output_path": str(output_path),
+
         "outer_center_px": outer_center,
         "inner_center_px": inner_center,
+
         "outer_diameter_px": round(float(outer_diameter), 2),
         "inner_diameter_px": round(float(inner_diameter), 2),
-        "insulation_thickness_px": round(float(insulation_thickness_px), 2),
-        "eccentricity_px": round(float(eccentricity_px), 2)
+
+        "insulation_thickness_px": round(
+            float(insulation_thickness_px),
+            2
+        ),
+
+        "eccentricity_px": round(
+            float(eccentricity_px),
+            2
+        ),
+
+        "measurement_count": 6,
+
+        "thickness_measurements_px":
+            thickness_measurements_px,
+
+        "min_thickness_px":
+            thickness_stats["min_thickness_px"],
+
+        "max_thickness_px":
+            thickness_stats["max_thickness_px"],
+
+        "mean_thickness_px":
+            thickness_stats["mean_thickness_px"]
     }
 
     json_path = BASE_DIR / "outputs" / "results.json"
