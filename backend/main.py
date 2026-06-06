@@ -31,7 +31,7 @@ def save_image(path, image):
     cv2.imencode(".png", image)[1].tofile(str(path))
 
 
-def process_image(image_path, output_path=DEFAULT_OUTPUT_PATH):
+def process_image(image_path, output_path=DEFAULT_OUTPUT_PATH, pixel_to_mm=0.02):
     image = load_image(str(image_path))
 
     image_name = str(image_path).lower()
@@ -101,14 +101,31 @@ def process_image(image_path, output_path=DEFAULT_OUTPUT_PATH):
         "image_path": str(image_path),
         "output_path": str(output_path),
 
+        "pixel_to_mm": pixel_to_mm,
+
         "outer_center_px": outer_center,
         "inner_center_px": inner_center,
 
         "outer_diameter_px": round(float(outer_diameter), 2),
         "inner_diameter_px": round(float(inner_diameter), 2),
 
+        "outer_diameter_mm": round(
+            float(outer_diameter) * pixel_to_mm,
+            2
+        ),
+
+        "inner_diameter_mm": round(
+            float(inner_diameter) * pixel_to_mm,
+            2
+        ),
+
         "insulation_thickness_px": round(
             float(insulation_thickness_px),
+            2
+        ),
+
+        "insulation_thickness_mm": round(
+            float(insulation_thickness_px) * pixel_to_mm,
             2
         ),
 
@@ -117,10 +134,20 @@ def process_image(image_path, output_path=DEFAULT_OUTPUT_PATH):
             2
         ),
 
+        "eccentricity_mm": round(
+            float(eccentricity_px) * pixel_to_mm,
+            2
+        ),
+
         "measurement_count": 6,
 
         "thickness_measurements_px":
             thickness_measurements_px,
+
+        "thickness_measurements_mm": [
+            round(value * pixel_to_mm, 2)
+            for value in thickness_measurements_px
+        ],
 
         "min_thickness_px":
             thickness_stats["min_thickness_px"],
@@ -130,7 +157,25 @@ def process_image(image_path, output_path=DEFAULT_OUTPUT_PATH):
 
         "mean_thickness_px":
             thickness_stats["mean_thickness_px"],
-            
+
+        "min_thickness_mm":
+            round(
+                thickness_stats["min_thickness_px"] * pixel_to_mm,
+                2
+            ),
+
+        "max_thickness_mm":
+            round(
+                thickness_stats["max_thickness_px"] * pixel_to_mm,
+                2
+            ),
+
+        "mean_thickness_mm":
+            round(
+                thickness_stats["mean_thickness_px"] * pixel_to_mm,
+                2
+            ),
+
         "measurement_angles_deg":
             measurement_angles_deg
     }

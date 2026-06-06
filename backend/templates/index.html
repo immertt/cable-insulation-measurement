@@ -30,9 +30,20 @@
     <h1>Kablo İzolasyon Kalınlığı Ölçüm Sistemi</h1>
 
     <form action="/analyze" method="post" enctype="multipart/form-data">
+
         <label>Kesit görüntüsü seç:</label>
         <input type="file" name="image" required>
+
+        <label>Pixel to mm:</label>
+        <input
+            type="number"
+            name="pixel_to_mm"
+            value="0.02"
+            step="0.001"
+        >
+
         <button type="submit">Hesapla</button>
+
     </form>
 
     {% if results %}
@@ -40,17 +51,28 @@
 
         <table>
             <tr><th>Parametre</th><th>Değer</th></tr>
+
+            <tr><td>Pixel to mm</td><td>{{ results.pixel_to_mm }}</td></tr>
+
             <tr><td>Dış Merkez</td><td>{{ results.outer_center_px }}</td></tr>
             <tr><td>İç Merkez</td><td>{{ results.inner_center_px }}</td></tr>
-            <tr><td>Dış Çap</td><td>{{ results.outer_diameter_px }} px</td></tr>
-            <tr><td>İç Çap</td><td>{{ results.inner_diameter_px }} px</td></tr>
-            <tr><td>İzolasyon Kalınlığı</td><td>{{ results.insulation_thickness_px }} px</td></tr>
+
+            <tr><td>Dış Çap</td><td>{{ results.outer_diameter_px }} px / {{ results.outer_diameter_mm }} mm</td></tr>
+            <tr><td>İç Çap</td><td>{{ results.inner_diameter_px }} px / {{ results.inner_diameter_mm }} mm</td></tr>
+
+            <tr><td>İzolasyon Kalınlığı</td><td>{{ results.insulation_thickness_px }} px / {{ results.insulation_thickness_mm }} mm</td></tr>
+
             <tr><td>Ölçüm Sayısı</td><td>{{ results.measurement_count }}</td></tr>
-            <tr><td>Kalınlık Ölçümleri</td><td>{{ results.thickness_measurements_px }}</td></tr>
-            <tr><td>Minimum Kalınlık</td><td>{{ results.min_thickness_px }} px</td></tr>
-            <tr><td>Maksimum Kalınlık</td><td>{{ results.max_thickness_px }} px</td></tr>
-            <tr><td>Ortalama Kalınlık</td><td>{{ results.mean_thickness_px }} px</td></tr>
-            <tr><td>Eksen Kaçıklığı</td><td>{{ results.eccentricity_px }} px</td></tr>
+            <tr><td>Ölçüm Açıları</td><td>{{ results.measurement_angles_deg }}</td></tr>
+
+            <tr><td>Kalınlık Ölçümleri</td><td>{{ results.thickness_measurements_px }} px</td></tr>
+            <tr><td>Kalınlık Ölçümleri</td><td>{{ results.thickness_measurements_mm }} mm</td></tr>
+
+            <tr><td>Minimum Kalınlık</td><td>{{ results.min_thickness_px }} px / {{ results.min_thickness_mm }} mm</td></tr>
+            <tr><td>Maksimum Kalınlık</td><td>{{ results.max_thickness_px }} px / {{ results.max_thickness_mm }} mm</td></tr>
+            <tr><td>Ortalama Kalınlık</td><td>{{ results.mean_thickness_px }} px / {{ results.mean_thickness_mm }} mm</td></tr>
+
+            <tr><td>Eksen Kaçıklığı</td><td>{{ results.eccentricity_px }} px / {{ results.eccentricity_mm }} mm</td></tr>
         </table>
 
         <h2>Sonuç Görseli</h2>

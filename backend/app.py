@@ -30,7 +30,8 @@ def analyze():
 
     file.save(image_path)
 
-    results = process_image(image_path, output_path)
+    pixel_to_mm = float(request.form.get("pixel_to_mm", 0.02))
+    results = process_image(image_path, output_path, pixel_to_mm)
 
     return render_template(
         "index.html",
