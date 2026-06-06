@@ -6,9 +6,11 @@ from image_processing import (
     load_image,
     preprocess_image,
     find_all_contours,
+    select_outer_and_inner_contours,
     get_contour_center,
     get_min_enclosing_circle
 )
+
 from measurements import (
     calculate_eccentricity,
     calculate_insulation_thickness
@@ -29,13 +31,12 @@ def process_image(image_path, output_path=DEFAULT_OUTPUT_PATH):
 
     gray, blurred, threshold = preprocess_image(image)
 
-    contours = find_all_contours(threshold)
+    contours, hierarchy = find_all_contours(threshold)
 
-    if len(contours) < 2:
-        raise ValueError("Outer and inner contours could not be detected.")
-
-    outer_contour = contours[0]
-    inner_contour = contours[1]
+    outer_contour, inner_contour = select_outer_and_inner_contours(
+        contours,
+        hierarchy
+    )
 
     outer_center = get_contour_center(outer_contour)
     inner_center = get_contour_center(inner_contour)

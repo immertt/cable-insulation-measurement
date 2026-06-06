@@ -34,9 +34,45 @@ def find_all_contours(threshold):
         cv2.CHAIN_APPROX_SIMPLE
     )
 
-    contours = sorted(contours, key=cv2.contourArea, reverse=True)
+    if hierarchy is not None:
+        hierarchy = hierarchy[0]
 
-    return contours
+    return contours, hierarchy
+
+def select_outer_and_inner_contours(contours, hierarchy):
+    if len(contours) < 2:
+        raise ValueError("Outer and inner contours could not be detected.")
+
+    contour_areas = [cv2.contourArea(c) for c in contours]
+
+    outer_index = max(range(len(contours)), key=lambda i: contour_areas[i])
+    outer_contour = contours[outer_index]
+
+    child_indices = []
+
+    if hierarchy is not None:
+        for i, h in enumerate(hierarchy):
+            parent_index = h[3]
+
+            if parent_index == outer_index:
+                child_indices.append(i)
+
+    if child_indices:
+        inner_index = max(child_indices, key=lambda i: contour_areas[i])
+    else:
+        candidates = [
+            i for i in range(len(contours))
+            if i != outer_index and contour_areas[i] > 100
+        ]
+
+        if not candidates:
+            raise ValueError("Inner contour could not be detected.")
+
+        inner_index = max(candidates, key=lambda i: contour_areas[i])
+
+    inner_contour = contours[inner_index]
+
+    return outer_contour, inner_contour
 
 
 def get_largest_contour(contours):
