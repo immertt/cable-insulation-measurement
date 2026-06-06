@@ -2,81 +2,937 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>Kablo İzolasyon Ölçümü</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kablo İzolasyon Ölçüm Sistemi</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --bg:        #0a0c10;
+            --surface:   #111318;
+            --border:    #1e2230;
+            --border-hi: #2e3450;
+            --accent:    #00d4ff;
+            --accent2:   #7c5cfc;
+            --warn:      #ff6b35;
+            --ok:        #00e5a0;
+            --text:      #e8eaf0;
+            --muted:     #6b7280;
+            --mono:      'JetBrains Mono', monospace;
+            --sans:      'Syne', sans-serif;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
         body {
-            font-family: Arial, sans-serif;
-            margin: 40px;
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--mono);
+            min-height: 100vh;
+            overflow-x: hidden;
         }
 
-        table {
+        /* Grid background */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(var(--border) 1px, transparent 1px),
+                linear-gradient(90deg, var(--border) 1px, transparent 1px);
+            background-size: 40px 40px;
+            opacity: 0.35;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .shell {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 32px 24px 80px;
+        }
+
+        /* ── Header ── */
+        header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 40px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo-mark {
+            width: 44px;
+            height: 44px;
+            border: 2px solid var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            flex-shrink: 0;
+            box-shadow: 0 0 16px rgba(0,212,255,.25);
+        }
+
+        .logo-mark::after {
+            content: '';
+            width: 18px;
+            height: 18px;
+            border: 2px solid var(--accent2);
+            border-radius: 50%;
+        }
+
+        .header-text h1 {
+            font-family: var(--sans);
+            font-size: 1.25rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: var(--text);
+        }
+
+        .header-text p {
+            font-size: 0.7rem;
+            color: var(--muted);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-top: 2px;
+        }
+
+        .badge {
+            margin-left: auto;
+            padding: 4px 10px;
+            font-size: 0.65rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            border: 1px solid var(--ok);
+            color: var(--ok);
+            border-radius: 20px;
+        }
+
+        /* ── Two-column layout ── */
+        .layout {
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            gap: 20px;
+            align-items: start;
+        }
+
+        @media (max-width: 820px) {
+            .layout { grid-template-columns: 1fr; }
+        }
+
+        /* ── Panel ── */
+        .panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .panel-header {
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .panel-header .dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--accent);
+            box-shadow: 0 0 6px var(--accent);
+        }
+
+        .panel-header span {
+            font-size: 0.7rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+
+        .panel-body { padding: 20px; }
+
+        /* ── Form ── */
+        .field { margin-bottom: 16px; }
+
+        label {
+            display: block;
+            font-size: 0.68rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="date"],
+        select {
+            width: 100%;
+            background: var(--bg);
+            border: 1px solid var(--border-hi);
+            color: var(--text);
+            font-family: var(--mono);
+            font-size: 0.85rem;
+            padding: 9px 12px;
+            border-radius: 6px;
+            outline: none;
+            transition: border-color .2s, box-shadow .2s;
+            appearance: none;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(0,212,255,.1);
+        }
+
+        select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 32px;
+        }
+
+        /* ── Cable type selector ── */
+        .cable-types {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .cable-type-btn {
+            border: 1px solid var(--border-hi);
+            background: var(--bg);
+            color: var(--muted);
+            font-family: var(--mono);
+            font-size: 0.68rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            padding: 10px 6px;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: center;
+            transition: all .2s;
+            line-height: 1.4;
+        }
+
+        .cable-type-btn .icon {
+            display: block;
+            font-size: 1.2rem;
+            margin-bottom: 4px;
+        }
+
+        .cable-type-btn:hover {
+            border-color: var(--accent2);
+            color: var(--text);
+        }
+
+        .cable-type-btn.active {
+            border-color: var(--accent);
+            background: rgba(0,212,255,.08);
+            color: var(--accent);
+            box-shadow: 0 0 12px rgba(0,212,255,.12);
+        }
+
+        /* Hidden radio */
+        input[type="radio"].cable-radio { display: none; }
+
+        /* ── File drop zone ── */
+        .dropzone {
+            border: 1px dashed var(--border-hi);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all .2s;
+            position: relative;
+        }
+
+        .dropzone:hover, .dropzone.drag-over {
+            border-color: var(--accent);
+            background: rgba(0,212,255,.04);
+        }
+
+        .dropzone input[type="file"] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+        }
+
+        .dropzone-icon { font-size: 1.8rem; margin-bottom: 6px; }
+
+        .dropzone-label {
+            font-size: 0.72rem;
+            color: var(--muted);
+            display: block;
+        }
+
+        .dropzone-label strong {
+            color: var(--accent);
+            font-weight: 400;
+        }
+
+        #file-name {
+            margin-top: 8px;
+            font-size: 0.7rem;
+            color: var(--ok);
+            display: none;
+        }
+
+        /* ── Preview image in dropzone ── */
+        #preview-img {
+            margin-top: 10px;
+            max-width: 100%;
+            max-height: 140px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            display: none;
+        }
+
+        /* ── Actions ── */
+        .actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            font-family: var(--mono);
+            font-size: 0.75rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            padding: 10px 12px;
+            border-radius: 6px;
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: all .2s;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #000;
+            border-color: var(--accent);
+            font-weight: 600;
+            grid-column: span 2;
+        }
+
+        .btn-primary:hover {
+            background: #33ddff;
+            box-shadow: 0 0 20px rgba(0,212,255,.35);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--muted);
+            border-color: var(--border-hi);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent2);
+            color: var(--text);
+        }
+
+        .btn-report {
+            background: transparent;
+            color: var(--ok);
+            border-color: var(--ok);
+        }
+
+        .btn-report:hover {
+            background: rgba(0,229,160,.08);
+            box-shadow: 0 0 12px rgba(0,229,160,.2);
+        }
+
+        /* ── Results panel ── */
+        .results-panel { display: flex; flex-direction: column; gap: 20px; }
+
+        /* ── Metrics grid ── */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .metric-card {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 14px 16px;
+            transition: border-color .2s;
+        }
+
+        .metric-card:hover { border-color: var(--border-hi); }
+
+        .metric-label {
+            font-size: 0.62rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+
+        .metric-value {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .metric-unit {
+            font-size: 0.7rem;
+            color: var(--muted);
+            margin-left: 3px;
+        }
+
+        .metric-card.accent-ok .metric-value { color: var(--ok); }
+        .metric-card.accent-warn .metric-value { color: var(--warn); }
+        .metric-card.accent-blue .metric-value { color: var(--accent); }
+        .metric-card.accent-purple .metric-value { color: var(--accent2); }
+
+        /* ── Thickness bar chart ── */
+        .thickness-section { }
+
+        .thickness-bars {
+            display: flex;
+            align-items: flex-end;
+            gap: 6px;
+            height: 80px;
+            padding: 0 4px;
+        }
+
+        .bar-wrap {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            height: 100%;
+            justify-content: flex-end;
+        }
+
+        .bar {
+            width: 100%;
+            background: var(--accent2);
+            border-radius: 3px 3px 0 0;
+            min-height: 4px;
+            transition: background .2s;
+            position: relative;
+        }
+
+        .bar:hover { background: var(--accent); }
+
+        .bar-label {
+            font-size: 0.58rem;
+            color: var(--muted);
+            text-align: center;
+        }
+
+        /* ── Full measurements table ── */
+        .measurements-table {
+            width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
+            font-size: 0.78rem;
         }
 
-        td, th {
-            border: 1px solid #ccc;
+        .measurements-table th {
+            font-size: 0.62rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--muted);
             padding: 8px 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
         }
 
-        img {
-            margin-top: 20px;
-            max-width: 700px;
-            border: 1px solid #ccc;
+        .measurements-table td {
+            padding: 9px 12px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text);
         }
+
+        .measurements-table tr:last-child td { border-bottom: none; }
+        .measurements-table tr:hover td { background: rgba(255,255,255,.02); }
+
+        .tag {
+            display: inline-block;
+            padding: 2px 7px;
+            border-radius: 10px;
+            font-size: 0.62rem;
+            letter-spacing: 0.06em;
+        }
+
+        .tag-ok { background: rgba(0,229,160,.12); color: var(--ok); }
+        .tag-warn { background: rgba(255,107,53,.12); color: var(--warn); }
+
+        /* ── Result image ── */
+        .result-img-wrap {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            text-align: center;
+        }
+
+        .result-img-wrap img {
+            max-width: 100%;
+            display: block;
+        }
+
+        /* ── Empty state ── */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            color: var(--muted);
+            gap: 12px;
+        }
+
+        .empty-state .icon { font-size: 2.5rem; opacity: .4; }
+
+        .empty-state p {
+            font-size: 0.75rem;
+            letter-spacing: 0.06em;
+            text-align: center;
+            max-width: 240px;
+            line-height: 1.6;
+        }
+
+        /* ── Section label ── */
+        .section-label {
+            font-size: 0.65rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 10px;
+        }
+
+        /* ── Divider ── */
+        .divider {
+            height: 1px;
+            background: var(--border);
+            margin: 6px 0 14px;
+        }
+
+        /* ── Flash message ── */
+        .flash {
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            margin-bottom: 16px;
+            border: 1px solid;
+        }
+        .flash-error { background: rgba(255,107,53,.08); border-color: var(--warn); color: var(--warn); }
+        .flash-ok    { background: rgba(0,229,160,.08);  border-color: var(--ok);   color: var(--ok); }
+
+        /* ── Spinner ── */
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .spinner {
+            width: 16px; height: 16px;
+            border: 2px solid rgba(0,0,0,.2);
+            border-top-color: #000;
+            border-radius: 50%;
+            animation: spin .7s linear infinite;
+            display: none;
+            margin: 0 auto;
+        }
+
+        .btn-primary.loading .spinner { display: inline-block; }
+        .btn-primary.loading .btn-text { display: none; }
+
+        /* ── Tooltip on metric ── */
+        .metric-sub {
+            font-size: 0.65rem;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+
+        /* ── Info row in panel ── */
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.72rem;
+            padding: 5px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .info-row:last-child { border-bottom: none; }
+        .info-row .k { color: var(--muted); }
+        .info-row .v { color: var(--text); }
     </style>
 </head>
 <body>
-    <h1>Kablo İzolasyon Kalınlığı Ölçüm Sistemi</h1>
+<div class="shell">
 
-    <form action="/analyze" method="post" enctype="multipart/form-data">
+    <!-- Header -->
+    <header>
+        <div class="logo-mark"></div>
+        <div class="header-text">
+            <h1>Kablo İzolasyon Ölçüm Sistemi</h1>
+            <p>Görüntü İşleme Tabanlı Kesit Analizi</p>
+        </div>
+        <div class="badge">● Çevrimiçi</div>
+    </header>
 
-        <label>Kesit görüntüsü seç:</label>
-        <input type="file" name="image" required>
+    <div class="layout">
 
-        <label>Pixel to mm:</label>
-        <input
-            type="number"
-            name="pixel_to_mm"
-            value="0.02"
-            step="0.001"
-        >
+        <!-- ═══ LEFT: Control Panel ═══ -->
+        <form id="analyze-form" action="/analyze" method="post" enctype="multipart/form-data">
 
-        <button type="submit">Hesapla</button>
+            <!-- Kablo Tipi -->
+            <div class="panel" style="margin-bottom: 16px;">
+                <div class="panel-header">
+                    <div class="dot"></div>
+                    <span>Kablo Tipi</span>
+                </div>
+                <div class="panel-body">
+                    <div class="cable-types">
+                        <label class="cable-type-btn active" id="btn-som" onclick="selectCable('som_telli',this)">
+                            <input type="radio" name="cable_type" value="som_telli" class="cable-radio" checked>
+                            <span class="icon">◎</span>
+                            Som Telli
+                        </label>
+                        <label class="cable-type-btn" id="btn-cok" onclick="selectCable('cok_telli',this)">
+                            <input type="radio" name="cable_type" value="cok_telli" class="cable-radio">
+                            <span class="icon">⊛</span>
+                            Çok Telli
+                        </label>
+                        <label class="cable-type-btn" id="btn-uc" onclick="selectCable('uc_damarli',this)">
+                            <input type="radio" name="cable_type" value="uc_damarli" class="cable-radio">
+                            <span class="icon">❧</span>
+                            Üç Damarlı
+                        </label>
+                    </div>
+                </div>
+            </div>
 
-    </form>
+            <!-- Görüntü -->
+            <div class="panel" style="margin-bottom: 16px;">
+                <div class="panel-header">
+                    <div class="dot" style="background:var(--accent2);box-shadow:0 0 6px var(--accent2);"></div>
+                    <span>Kesit Görüntüsü</span>
+                </div>
+                <div class="panel-body">
+                    <div class="dropzone" id="dropzone">
+                        <input type="file" name="image" id="file-input" accept="image/*" required onchange="onFileChange(this)">
+                        <div class="dropzone-icon">⊕</div>
+                        <span class="dropzone-label">
+                            <strong>Dosya seç</strong> veya sürükle bırak
+                        </span>
+                        <div id="file-name"></div>
+                        <img id="preview-img" alt="Önizleme">
+                    </div>
+                    <div style="margin-top:12px;">
+                        <button type="button" class="btn btn-secondary" style="width:100%;" onclick="simulateCapture()">
+                            ⊙ Kameradan Görüntü Al
+                        </button>
+                    </div>
+                </div>
+            </div>
 
-    {% if results %}
-        <h2>Ölçüm Sonuçları</h2>
+            <!-- Kesit Bilgileri -->
+            <div class="panel" style="margin-bottom: 16px;">
+                <div class="panel-header">
+                    <div class="dot" style="background:var(--ok);box-shadow:0 0 6px var(--ok);"></div>
+                    <span>Kesit Bilgileri</span>
+                </div>
+                <div class="panel-body">
+                    <div class="field">
+                        <label>Kesit ID</label>
+                        <input type="text" name="section_id" placeholder="KS-2024-001" value="">
+                    </div>
+                    <div class="field">
+                        <label>Kesit Alınma Tarihi</label>
+                        <input type="date" name="section_date" id="section-date">
+                    </div>
+                    <div class="field">
+                        <label>Pixel → mm Katsayısı</label>
+                        <input type="number" name="pixel_to_mm" value="0.02" step="0.001" min="0.001">
+                    </div>
+                    <div class="field">
+                        <label>Ölçüm Sayısı</label>
+                        <select name="measurement_count">
+                            <option value="6">6  (60° aralıklı)</option>
+                            <option value="8">8  (45° aralıklı)</option>
+                            <option value="10">10 (36° aralıklı)</option>
+                            <option value="12">12 (30° aralıklı)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
 
-        <table>
-            <tr><th>Parametre</th><th>Değer</th></tr>
+            <!-- Aksiyon Butonları -->
+            <div class="actions">
+                <button type="submit" class="btn btn-primary" id="calculate-btn">
+                    <span class="btn-text">⊞ Hesapla</span>
+                    <span class="spinner"></span>
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="resetForm()">↺ Yenile</button>
+                <button type="button" class="btn btn-report" id="report-btn" onclick="downloadReport()" {% if not results %}style="opacity:.4;pointer-events:none;"{% endif %}>
+                    ↓ Rapor Oluştur
+                </button>
+            </div>
 
-            <tr><td>Pixel to mm</td><td>{{ results.pixel_to_mm }}</td></tr>
+        </form>
 
-            <tr><td>Dış Merkez</td><td>{{ results.outer_center_px }}</td></tr>
-            <tr><td>İç Merkez</td><td>{{ results.inner_center_px }}</td></tr>
+        <!-- ═══ RIGHT: Results ═══ -->
+        <div class="results-panel">
 
-            <tr><td>Dış Çap</td><td>{{ results.outer_diameter_px }} px / {{ results.outer_diameter_mm }} mm</td></tr>
-            <tr><td>İç Çap</td><td>{{ results.inner_diameter_px }} px / {{ results.inner_diameter_mm }} mm</td></tr>
+            {% if results %}
 
-            <tr><td>İzolasyon Kalınlığı</td><td>{{ results.insulation_thickness_px }} px / {{ results.insulation_thickness_mm }} mm</td></tr>
+            <!-- Meta bilgi -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="dot" style="background:var(--ok);box-shadow:0 0 6px var(--ok);"></div>
+                    <span>Analiz Tamamlandı</span>
+                </div>
+                <div class="panel-body">
+                    <div class="info-row">
+                        <span class="k">Görüntü</span>
+                        <span class="v">{{ results.image_path.split('/')[-1] if results.image_path else '—' }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="k">Px → mm</span>
+                        <span class="v">{{ results.pixel_to_mm }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="k">Ölçüm Sayısı</span>
+                        <span class="v">{{ results.measurement_count }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="k">Dış Merkez</span>
+                        <span class="v">{{ results.outer_center_px }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="k">İç Merkez</span>
+                        <span class="v">{{ results.inner_center_px }}</span>
+                    </div>
+                </div>
+            </div>
 
-            <tr><td>Ölçüm Sayısı</td><td>{{ results.measurement_count }}</td></tr>
-            <tr><td>Ölçüm Açıları</td><td>{{ results.measurement_angles_deg }}</td></tr>
+            <!-- Metrikler -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="dot"></div>
+                    <span>Temel Ölçümler</span>
+                </div>
+                <div class="panel-body">
+                    <div class="metrics-grid">
+                        <div class="metric-card accent-blue">
+                            <div class="metric-label">Dış Çap</div>
+                            <div class="metric-value">{{ results.outer_diameter_mm }}<span class="metric-unit">mm</span></div>
+                            <div class="metric-sub">{{ results.outer_diameter_px }} px</div>
+                        </div>
+                        <div class="metric-card accent-purple">
+                            <div class="metric-label">İç Çap</div>
+                            <div class="metric-value">{{ results.inner_diameter_mm }}<span class="metric-unit">mm</span></div>
+                            <div class="metric-sub">{{ results.inner_diameter_px }} px</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">İzolasyon Ort.</div>
+                            <div class="metric-value">{{ results.insulation_thickness_mm }}<span class="metric-unit">mm</span></div>
+                            <div class="metric-sub">{{ results.insulation_thickness_px }} px</div>
+                        </div>
+                        <div class="metric-card accent-ok">
+                            <div class="metric-label">Min Kalınlık</div>
+                            <div class="metric-value">{{ results.min_thickness_mm }}<span class="metric-unit">mm</span></div>
+                            <div class="metric-sub">{{ results.min_thickness_px }} px</div>
+                        </div>
+                        <div class="metric-card accent-warn">
+                            <div class="metric-label">Max Kalınlık</div>
+                            <div class="metric-value">{{ results.max_thickness_mm }}<span class="metric-unit">mm</span></div>
+                            <div class="metric-sub">{{ results.max_thickness_px }} px</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">Eksen Kaçıklığı</div>
+                            <div class="metric-value">{{ results.eccentricity_mm }}<span class="metric-unit">mm</span></div>
+                            <div class="metric-sub">{{ results.eccentricity_px }} px</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-            <tr><td>Kalınlık Ölçümleri</td><td>{{ results.thickness_measurements_px }} px</td></tr>
-            <tr><td>Kalınlık Ölçümleri</td><td>{{ results.thickness_measurements_mm }} mm</td></tr>
+            <!-- Açısal kalınlık tablosu -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="dot" style="background:var(--accent2);box-shadow:0 0 6px var(--accent2);"></div>
+                    <span>Açısal Kalınlık Ölçümleri</span>
+                </div>
+                <div class="panel-body" style="padding: 0;">
+                    <!-- Mini bar chart -->
+                    <div style="padding: 16px 20px 0;">
+                        <div class="thickness-bars" id="thickness-bars">
+                            {% set thicknesses = results.thickness_measurements_mm %}
+                            {% set max_t = thicknesses | max %}
+                            {% for t in thicknesses %}
+                            <div class="bar-wrap">
+                                <div class="bar"
+                                     style="height: {{ ((t / max_t) * 70) | round | int }}px;"
+                                     title="{{ t }} mm">
+                                </div>
+                                <div class="bar-label">{{ loop.index }}</div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div style="height:12px;"></div>
+                    <table class="measurements-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Açı (°)</th>
+                                <th>Kalınlık (px)</th>
+                                <th>Kalınlık (mm)</th>
+                                <th>Durum</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for i in range(results.measurement_count) %}
+                            {% set t_mm = results.thickness_measurements_mm[i] %}
+                            {% set t_px = results.thickness_measurements_px[i] %}
+                            {% set angle = results.measurement_angles_deg[i] %}
+                            <tr>
+                                <td>{{ i + 1 }}</td>
+                                <td>{{ angle }}°</td>
+                                <td>{{ t_px }}</td>
+                                <td>{{ t_mm }}</td>
+                                <td>
+                                    {% if t_mm == results.min_thickness_mm %}
+                                        <span class="tag tag-warn">min</span>
+                                    {% elif t_mm == results.max_thickness_mm %}
+                                        <span class="tag tag-ok">max</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
-            <tr><td>Minimum Kalınlık</td><td>{{ results.min_thickness_px }} px / {{ results.min_thickness_mm }} mm</td></tr>
-            <tr><td>Maksimum Kalınlık</td><td>{{ results.max_thickness_px }} px / {{ results.max_thickness_mm }} mm</td></tr>
-            <tr><td>Ortalama Kalınlık</td><td>{{ results.mean_thickness_px }} px / {{ results.mean_thickness_mm }} mm</td></tr>
+            <!-- Sonuç görseli -->
+            {% if output_image %}
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="dot" style="background:var(--warn);box-shadow:0 0 6px var(--warn);"></div>
+                    <span>Sonuç Görseli</span>
+                </div>
+                <div class="result-img-wrap">
+                    <img src="/outputs/{{ output_image }}" alt="Ölçüm sonucu">
+                </div>
+            </div>
+            {% endif %}
 
-            <tr><td>Eksen Kaçıklığı</td><td>{{ results.eccentricity_px }} px / {{ results.eccentricity_mm }} mm</td></tr>
-        </table>
+            {% else %}
 
-        <h2>Sonuç Görseli</h2>
-        <img src="/outputs/{{ output_image }}" alt="Sonuç görseli">
-    {% endif %}
+            <!-- Empty state -->
+            <div class="panel" style="height:100%;min-height:400px;display:flex;align-items:center;justify-content:center;">
+                <div class="empty-state">
+                    <div class="icon">◎</div>
+                    <p>Kablo tipi seçin, görüntü yükleyin ve <strong>Hesapla</strong> butonuna basın.</p>
+                </div>
+            </div>
+
+            {% endif %}
+
+        </div>
+        <!-- /results -->
+
+    </div>
+    <!-- /layout -->
+
+</div>
+<!-- /shell -->
+
+<script>
+    // Set today's date as default
+    document.getElementById('section-date').valueAsDate = new Date();
+
+    // Cable type selection
+    function selectCable(type, el) {
+        document.querySelectorAll('.cable-type-btn').forEach(b => b.classList.remove('active'));
+        el.classList.add('active');
+        el.querySelector('input[type="radio"]').checked = true;
+    }
+
+    // File input change
+    function onFileChange(input) {
+        const file = input.files[0];
+        if (!file) return;
+
+        const nameEl = document.getElementById('file-name');
+        nameEl.textContent = file.name;
+        nameEl.style.display = 'block';
+
+        const preview = document.getElementById('preview-img');
+        const reader = new FileReader();
+        reader.onload = e => {
+            preview.src = e.target.result;
+            preview.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    }
+
+    // Simulate camera capture (loads a random sample image for demo)
+    function simulateCapture() {
+        const cableType = document.querySelector('input[name="cable_type"]:checked').value;
+        const sampleImages = {
+            'som_telli':  ['som_telli_1.jpg', 'som_telli_2.png'],
+            'cok_telli':  ['cok_telli_1.jpg', 'cok_telli_2.jpeg'],
+            'uc_damarli': ['uc_damarli_1.jpg', 'uc_damarli_2.jpeg']
+        };
+        const images = sampleImages[cableType] || sampleImages['som_telli'];
+        const picked = images[Math.floor(Math.random() * images.length)];
+
+        const nameEl = document.getElementById('file-name');
+        nameEl.textContent = '📷 ' + picked + ' (simüle)';
+        nameEl.style.display = 'block';
+
+        // Show a visual feedback
+        const dz = document.getElementById('dropzone');
+        dz.style.borderColor = 'var(--ok)';
+        setTimeout(() => dz.style.borderColor = '', 1200);
+    }
+
+    // Reset form
+    function resetForm() {
+        document.getElementById('analyze-form').reset();
+        document.getElementById('file-name').style.display = 'none';
+        document.getElementById('preview-img').style.display = 'none';
+        document.getElementById('section-date').valueAsDate = new Date();
+        document.querySelectorAll('.cable-type-btn').forEach((b, i) => {
+            b.classList.toggle('active', i === 0);
+        });
+    }
+
+    // Download report (triggers JSON download)
+    function downloadReport() {
+        window.open('/outputs/results.json', '_blank');
+    }
+
+    // Loading state on submit
+    document.getElementById('analyze-form').addEventListener('submit', function() {
+        const btn = document.getElementById('calculate-btn');
+        btn.classList.add('loading');
+        btn.disabled = true;
+    });
+
+    // Drag-over visual
+    const dz = document.getElementById('dropzone');
+    dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over'); });
+    dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
+    dz.addEventListener('drop', () => dz.classList.remove('drag-over'));
+</script>
+
 </body>
 </html>

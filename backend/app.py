@@ -1,5 +1,5 @@
 from pathlib import Path
-from flask import Flask, render_template, request, send_from_directory
+from flask import Flask, render_template, request, send_from_directory, jsonify
 
 from main import process_image
 
@@ -22,27 +22,57 @@ def index():
 def analyze():
     file = request.files.get("image")
 
-    if not file:
-        return "No image uploaded", 400
+    if not file or file.filename == "":
+        return render_template("index.html", error="Lütfen bir görüntü yükleyin.")
 
-    image_path = UPLOAD_DIR / file.filename
+    # ── Form alanlarını oku ──
+    cable_type       = request.form.get("cable_type", "som_telli")
+    section_id       = request.form.get("section_id", "")
+    section_date     = request.form.get("section_date", "")
+    pixel_to_mm      = float(request.form.get("pixel_to_mm", 0.02))
+    measurement_count = int(request.form.get("measurement_count", 6))
+
+    # ── Görüntüyü kaydet ──
+    image_path  = UPLOAD_DIR / file.filename
     output_path = OUTPUT_DIR / "web_result.png"
-
     file.save(image_path)
 
-    pixel_to_mm = float(request.form.get("pixel_to_mm", 0.02))
-    results = process_image(image_path, output_path, pixel_to_mm)
+    # ── İşle ──
+    try:
+        results = process_image(
+            image_path=image_path,
+            output_path=output_path,
+            pixel_to_mm=pixel_to_mm,
+            cable_type=cable_type,
+            measurement_count=measurement_count,
+            section_id=section_id,
+            section_date=section_date,
+        )
+    except Exception as e:
+        return render_template("index.html", error=f"İşlem hatası: {str(e)}")
 
     return render_template(
         "index.html",
         results=results,
-        output_image="web_result.png"
+        output_image="web_result.png",
     )
 
 
 @app.route("/outputs/<filename>")
 def outputs(filename):
     return send_from_directory(OUTPUT_DIR, filename)
+
+
+@app.route("/report")
+def report():
+    """JSON raporu döndürür."""
+    json_path = OUTPUT_DIR / "results.json"
+    if not json_path.exists():
+        return jsonify({"error": "Henüz sonuç yok."}), 404
+    return send_from_directory(OUTPUT_DIR, "results.json",
+                               mimetype="application/json",
+                               as_attachment=True,
+                               download_name="kablo_olcum_raporu.json")
 
 
 if __name__ == "__main__":
