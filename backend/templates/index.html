@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Kablo İzolasyon Ölçümü</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+        }
+
+        table {
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        td, th {
+            border: 1px solid #ccc;
+            padding: 8px 12px;
+        }
+
+        img {
+            margin-top: 20px;
+            max-width: 700px;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+    <h1>Kablo İzolasyon Kalınlığı Ölçüm Sistemi</h1>
+
+    <form action="/analyze" method="post" enctype="multipart/form-data">
+        <label>Kesit görüntüsü seç:</label>
+        <input type="file" name="image" required>
+        <button type="submit">Hesapla</button>
+    </form>
+
+    {% if results %}
+        <h2>Ölçüm Sonuçları</h2>
+
+        <table>
+            <tr><th>Parametre</th><th>Değer</th></tr>
+            <tr><td>Dış Merkez</td><td>{{ results.outer_center_px }}</td></tr>
+            <tr><td>İç Merkez</td><td>{{ results.inner_center_px }}</td></tr>
+            <tr><td>Dış Çap</td><td>{{ results.outer_diameter_px }} px</td></tr>
+            <tr><td>İç Çap</td><td>{{ results.inner_diameter_px }} px</td></tr>
+            <tr><td>İzolasyon Kalınlığı</td><td>{{ results.insulation_thickness_px }} px</td></tr>
+            <tr><td>Eksen Kaçıklığı</td><td>{{ results.eccentricity_px }} px</td></tr>
+        </table>
+
+        <h2>Sonuç Görseli</h2>
+        <img src="/outputs/{{ output_image }}" alt="Sonuç görseli">
+    {% endif %}
+</body>
+</html>
