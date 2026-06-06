@@ -1,5 +1,6 @@
 import cv2
 from pathlib import Path
+import json
 
 from image_processing import (
     load_image,
@@ -84,6 +85,11 @@ def process_image(image_path, output_path=DEFAULT_OUTPUT_PATH):
         "insulation_thickness_px": round(float(insulation_thickness_px), 2),
         "eccentricity_px": round(float(eccentricity_px), 2)
     }
+
+    json_path = BASE_DIR / "outputs" / "results.json"
+
+    with open(json_path, "w", encoding="utf-8") as file:
+        json.dump(results, file, indent=4)
 
     return results
 
