@@ -1,5 +1,4 @@
 import cv2
-import math
 from pathlib import Path
 
 from image_processing import (
@@ -9,7 +8,10 @@ from image_processing import (
     get_contour_center,
     get_min_enclosing_circle
 )
-
+from measurements import (
+    calculate_eccentricity,
+    calculate_insulation_thickness
+)
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 IMAGE_PATH = BASE_DIR / "data" / "som_telli_1.jpg"
@@ -35,9 +37,12 @@ def main():
     _, outer_diameter, outer_radius = get_min_enclosing_circle(outer_contour)
     _, inner_diameter, inner_radius = get_min_enclosing_circle(inner_contour)
 
-    eccentricity_px = math.dist(outer_center, inner_center)
+    eccentricity_px = calculate_eccentricity(outer_center, inner_center)
 
-    insulation_thickness_px = (outer_diameter - inner_diameter) / 2
+    insulation_thickness_px = calculate_insulation_thickness(
+        outer_diameter,
+        inner_diameter
+    )
 
     print("Cable measurement completed.")
     print("Outer center:", outer_center)
