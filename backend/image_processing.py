@@ -101,3 +101,24 @@ def get_min_enclosing_circle(contour):
     diameter = 2 * radius
 
     return center, diameter, radius
+
+def preprocess_color_cable(image):
+    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+
+    # Yellow insulation mask
+    lower_yellow = np.array([15, 40, 40])
+    upper_yellow = np.array([45, 255, 255])
+    yellow_mask = cv2.inRange(hsv, lower_yellow, upper_yellow)
+
+    # Green edge mask
+    lower_green = np.array([35, 30, 30])
+    upper_green = np.array([95, 255, 255])
+    green_mask = cv2.inRange(hsv, lower_green, upper_green)
+
+    mask = cv2.bitwise_or(yellow_mask, green_mask)
+
+    kernel = np.ones((5, 5), np.uint8)
+    mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel, iterations=2)
+    mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel, iterations=1)
+
+    return mask

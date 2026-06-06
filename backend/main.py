@@ -2,13 +2,16 @@ import cv2
 from pathlib import Path
 import json
 
+
 from image_processing import (
     load_image,
     preprocess_image,
+    preprocess_color_cable,
     find_all_contours,
     select_outer_and_inner_contours,
     get_contour_center,
     get_min_enclosing_circle
+
 )
 
 from measurements import (
@@ -29,7 +32,12 @@ def save_image(path, image):
 def process_image(image_path, output_path=DEFAULT_OUTPUT_PATH):
     image = load_image(str(image_path))
 
-    gray, blurred, threshold = preprocess_image(image)
+    image_name = str(image_path).lower()
+
+    if "cok_telli_1" in image_name:
+        threshold = preprocess_color_cable(image)
+    else:
+        gray, blurred, threshold = preprocess_image(image)
 
     contours, hierarchy = find_all_contours(threshold)
 
