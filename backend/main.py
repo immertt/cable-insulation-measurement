@@ -17,6 +17,7 @@ from image_processing import (
 from measurements import (
     calculate_eccentricity,
     calculate_insulation_thickness,
+    calculate_radial_thicknesses,
     calculate_thickness_statistics
 )
 
@@ -60,10 +61,12 @@ def process_image(image_path, output_path=DEFAULT_OUTPUT_PATH):
         inner_diameter
     )
 
-    thickness_measurements_px = [
-        round(float(insulation_thickness_px), 2)
-        for _ in range(6)
-    ]
+    thickness_measurements_px, measurement_angles_deg = calculate_radial_thicknesses(
+        outer_contour,
+        inner_contour,
+        outer_center,
+        measurement_count=6
+    )
 
     thickness_stats = calculate_thickness_statistics(
         thickness_measurements_px
@@ -126,7 +129,10 @@ def process_image(image_path, output_path=DEFAULT_OUTPUT_PATH):
             thickness_stats["max_thickness_px"],
 
         "mean_thickness_px":
-            thickness_stats["mean_thickness_px"]
+            thickness_stats["mean_thickness_px"],
+            
+        "measurement_angles_deg":
+            measurement_angles_deg
     }
 
     json_path = BASE_DIR / "outputs" / "results.json"
